@@ -2,12 +2,11 @@ package Kwiki::GuestBook;
 use strict;
 use warnings;
 use Kwiki::Plugin '-Base';
-use Kwiki::Installer '-base';
-our $VERSION = '0.10';
+use mixin 'Kwiki::Installer';
+our $VERSION = '0.11';
 
 const class_id => 'guest_book';
 const class_title => 'Guest Book';
-const screen_template => 'guest_book_screen.html';
 const css_file => 'css/guest_book.css';
 
 sub register {
@@ -80,10 +79,9 @@ __template/tt2/guest_book_button_icon.html__
 <!-- BEGIN guest_book_button_icon.html -->
 Guests
 <!-- END guest_book_button_icon.html -->
-__template/tt2/guest_book_screen.html__
-<!-- BEGIN guest_book_screen.html -->
+__template/tt2/guest_book_content.html__
+<!-- BEGIN guest_book_content.html -->
 [% screen_title = "Guest Book" %]
-[% INCLUDE kwiki_layout_begin.html %]
 <div class="guest_book">
 <p>
 [% pages.size || 0 %] Guests:
@@ -95,5 +93,4 @@ __template/tt2/guest_book_screen.html__
 </ul>
 <em>Set your user name in <a href="[% script_name %]?action=user_preferences">Preferences</a></em>
 </div>
-[% INCLUDE kwiki_layout_end.html %]
-<!-- END guest_book_screen.html -->
+<!-- END guest_book_content.html -->
