@@ -1,7 +1,7 @@
 package Kwiki::GuestBook;
 use Kwiki::Plugin -Base;
 use mixin 'Kwiki::Installer';
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 const class_id => 'guest_book';
 const css_file => 'css/guest_book.css';
@@ -17,7 +17,7 @@ sub register {
 }
 
 sub guest_book {
-    my $user_db = $self->user_db;
+    my $user_db = $self->user_db->rdonly;
     my @pages = map {
         $self->pages->new_page($_);
     } sort {lc($a) cmp lc($b)} keys %{$user_db};
@@ -29,23 +29,23 @@ sub update {
     my $hook = pop;
     my ($returned) = $hook->returned;
     return $returned unless $returned eq '1';
-    $self = $self->hub->load_class('guest_book');
+    $self = $self->hub->guest_book;
     my $preference = shift;
     $self->remove_guest($preference->value);
     $self->add_guest($preference->new_value);
 }
 
 sub add_guest {
-    $self->user_db->{(shift || return)} = 1;
+    $self->user_db->rdwr->{(shift || return)} = 1;
 }
 
 sub remove_guest {
-    delete $self->user_db->{(shift)};
+    delete $self->user_db->rdwr->{(shift)};
 }
 
 sub user_db {
     my $db = io($self->plugin_directory . '/user_name.db');
-    $db->utf8->rdwr->dbm('DB_File::Lock');
+    $db->utf8->dbm('DB_File::Lock');
 }
 
 __DATA__
