@@ -1,16 +1,16 @@
 name: Kwiki-GuestBook
-version: 0.11
+version: 0.12
 abstract: Kwiki Plugin to Make a Guest Book of Users
 author: Brian Ingerson <ingy@cpan.org>
 license: perl
 distribution_type: module
 requires:
   perl: 5.6.1
-  Kwiki: 0.32
-  Kwiki::UserName: 0.11
+  Kwiki: 0.34
+  Kwiki::UserName: 0.13
   DB_File: 0
   DB_File::Lock: 0
 no_index:
   directory:
     - inc
-generated_by: Module::Install version 0.33
+generated_by: Module::Install version 0.36

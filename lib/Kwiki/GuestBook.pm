@@ -1,32 +1,36 @@
 package Kwiki::GuestBook;
-use strict;
-use warnings;
-use Kwiki::Plugin '-Base';
+use Kwiki::Plugin -Base;
 use mixin 'Kwiki::Installer';
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 const class_id => 'guest_book';
-const class_title => 'Guest Book';
 const css_file => 'css/guest_book.css';
 
 sub register {
     my $registry = shift;
     $registry->add(action => 'guest_book');
-    $registry->add(user_name_hook => 'update');
+    $registry->add(prerequisite => 'user_name');
+    $registry->add(hook => 'user_name:check_user_name', post => 'update');
     $registry->add(toolbar => 'guest_book_button', 
                    template => 'guest_book_button.html',
                   );
 }
 
 sub guest_book {
+    my $user_db = $self->user_db;
     my @pages = map {
         $self->pages->new_page($_);
-    } sort {lc($a) cmp lc($b)} keys %{$self->user_db};
+    } sort {lc($a) cmp lc($b)} keys %{$user_db};
+    $user_db->close;
     $self->render_screen(pages => \@pages);
 }
 
 sub update {
-    my $preference = $self->preferences->user_name;
+    my $hook = pop;
+    my ($returned) = $hook->returned;
+    return $returned unless $returned eq '1';
+    $self = $self->hub->load_class('guest_book');
+    my $preference = shift;
     $self->remove_guest($preference->value);
     $self->add_guest($preference->new_value);
 }
@@ -40,10 +44,9 @@ sub remove_guest {
 }
 
 sub user_db {
-    io($self->plugin_directory . '/user_name.db')->lock->dbm('DB_File');
+    my $db = io($self->plugin_directory . '/user_name.db');
+    $db->utf8->rdwr->dbm('DB_File::Lock');
 }
-
-1;
 
 __DATA__
 
@@ -70,17 +73,12 @@ See http://www.perl.com/perl/misc/Artistic.html
 
 =cut
 __template/tt2/guest_book_button.html__
-<!-- BEGIN guest_book_button.html -->
 <a href="[% script_name %]?action=guest_book" accesskey="g" title="Guest Book">
 [% INCLUDE guest_book_button_icon.html %]
 </a>
-<!-- END guest_book_button.html -->
 __template/tt2/guest_book_button_icon.html__
-<!-- BEGIN guest_book_button_icon.html -->
 Guests
-<!-- END guest_book_button_icon.html -->
 __template/tt2/guest_book_content.html__
-<!-- BEGIN guest_book_content.html -->
 [% screen_title = "Guest Book" %]
 <div class="guest_book">
 <p>
@@ -93,4 +91,3 @@ __template/tt2/guest_book_content.html__
 </ul>
 <em>Set your user name in <a href="[% script_name %]?action=user_preferences">Preferences</a></em>
 </div>
-<!-- END guest_book_content.html -->
